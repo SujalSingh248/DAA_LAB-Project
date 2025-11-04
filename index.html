@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Image Compressor • simple & handmade</title>
+  <meta name="description" content="A very simple, human-made image compressor. Drag, drop, set quality, and download." />
+  <style>
+    :root{
+      --bg:#f7f7fb;
+      --card:#ffffff;
+      --text:#222;
+      --muted:#666;
+      --accent:#2b7cff;
+      --accent-2:#ff7c2b;
+      --border:#e7e7ee;
+      --shadow:0 6px 18px rgba(0,0,0,.06);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    header{padding:28px 16px 0;}
+    .wrap{max-width:980px;margin:0 auto;padding:0 16px}
+    .title{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:var(--shadow);display:inline-grid;place-items:center;color:#fff;font-weight:700;}
+    h1{font-size:28px;margin:0}
+    p.topnote{margin:.25rem 0 1rem;color:var(--muted)}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:18px;margin:18px 0;}
+    .drop{border:2px dashed #cfd3dd;border-radius:12px;background:#fafafd;padding:20px;text-align:center;cursor:pointer;transition:.15s ease;}
+    .drop:hover{border-color:var(--accent)}
+    .drop.dragover{background:#eef5ff;border-color:var(--accent)}
+    .drop small{display:block;color:var(--muted)}
+    .controls{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+    @media (min-width:720px){.controls{grid-template-columns:1fr 1fr 1fr}}
+    .field{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px}
+    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .field input[type="number"], .field input[type="range"], .field select{width:100%}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    button{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:600;box-shadow:var(--shadow)}
+    button.secondary{background:#eef3ff;color:#1e3a8a}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:16px}
+    @media (min-width:720px){.grid{grid-template-columns:1fr 1fr}}
+    .item{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .thumb{width:120px;min-height:90px;background:#f0f2f7;display:grid;place-items:center}
+    .thumb img{max-width:100%;max-height:120px;display:block}
+    .meta{padding:10px;flex:1}
+    .meta h4{margin:0 0 4px 0;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .meta .sizes{color:var(--muted);font-size:12px;margin:4px 0}
+    .meta .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .pill{display:inline-block;background:#f5f7ff;border:1px solid var(--border);border-radius:999px;padding:2px 8px;font-size:12px;color:#1f2a44}
+    footer{color:var(--muted);font-size:13px;margin:40px 0 24px;text-align:center}
+    footer .heart{color:#e63946}
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <div class="title">
+      <div class="logo" aria-hidden="true">IC</div>
+      <div>
+        <h1>Image Compressor</h1>
+        <p class="topnote">Tiny, no-nonsense tool. Works in your browser. No uploads.</p>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="card" aria-label="Uploader">
+      <div id="drop" class="drop" tabindex="0" role="button" aria-label="Add images by clicking or dropping">
+        <strong>Drag & drop images here</strong>
+        <small>or click to choose files (JPG/PNG/WebP)</small>
+        <input id="file" type="file" accept="image/*" multiple hidden>
+      </div>
+      <div class="controls" aria-label="Compression settings">
+        <div class="field">
+          <label for="quality">Quality <span id="qval" aria-live="polite">85</span></label>
+          <input id="quality" type="range" min="10" max="100" step="1" value="85">
+        </div>
+        <div class="field">
+          <label for="maxw">Max Width (px)</label>
+          <input id="maxw" type="number" min="0" step="10" value="1920" placeholder="0 = keep width">
+        </div>
+        <div class="field">
+          <label for="maxh">Max Height (px)</label>
+          <input id="maxh" type="number" min="0" step="10" value="1080" placeholder="0 = keep height">
+        </div>
+      </div>
+      <div class="btns">
+        <button id="compressBtn" disabled>Compress selected</button>
+        <button id="clearBtn" class="secondary" disabled>Clear list</button>
+      </div>
+      <div id="list" class="grid" aria-live="polite"></div>
+    </section>
+    <section class="card" aria-label="Tips">
+      <h3 style="margin-top:0">Tips</h3>
+      <ul>
+        <li>Set <em>Max Width/Height</em> to 0 if you don’t want resizing.</li>
+        <li>PNG with lots of transparency may compress better as WebP.</li>
+        <li>We keep everything on your device. Nothing gets uploaded.</li>
+      </ul>
+    </section>
+  </main>
+  <footer>
+    <div class="wrap">Made with <span class="heart">♥</span> by Sujal and Kishan.</div>
+  </footer>
+</body>
+</html>
